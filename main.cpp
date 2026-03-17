@@ -11,8 +11,8 @@
 // This requires using triangles to create slices to fill a circle
 // Thus is inefficient with batching, so eventually explore frag shaders
 
-const int HEIGHT = 1080;
 const int WIDTH = 1920;
+const int HEIGHT = 1080;
 const float RESISTANCE = 0.0025f;
 const float GRAVITY = 0.005f;
 const int NUMBER_BALLS = 25 - 1;
