@@ -1,4 +1,4 @@
-# Basic edge collsion physics program
+# Basic edge collsion physics simulator program
 A very rudimentary implementation to model the physics of objects colliding with edges.
 
 ## features
@@ -7,8 +7,8 @@ A very rudimentary implementation to model the physics of objects colliding with
 - Basic edge collision with the edges of the screen.
 
 ## Roadmap
-[] Adjust edge detection to be more dynamic using points and normals to determine collisions.
+[ ] Adjust edge detection to be more dynamic using points and normals to determine collisions.
 
-[] Allow for loading of json file to create static objects in scene that physics objects can interact with.
+[ ] Allow for loading of json file to create static objects in scene that physics objects can interact with.
 
-[] Update data structure with new structs to allow for more dynamism.
+[ ] Update data structure with new structs to allow for more dynamism.
