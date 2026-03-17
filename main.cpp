@@ -110,15 +110,19 @@ int main() {
         if (keyPressed.scancode == sf::Keyboard::Scancode::Escape)
             window.close();
 
-        if (keyPressed.scancode == sf::Keyboard::Scancode::R)
-        while (!balls.empty()) {
-            balls.pop_back();
+        if (keyPressed.scancode == sf::Keyboard::Scancode::R) {
+            while (!balls.empty()) {
+                balls.pop_back();
+            }
+            for (int i=0; i < NUMBER_BALLS; i++) {
+                balls.emplace_back(posX(gen), randRad(gen), randDensity(gen), randHardness(gen), get_Velocity_Mod());
+            }
+            for (Ball& ball : balls) {
+                ball.set_Ball_Pos(posX(gen));
+            }
         }
-        for (int i=0; i < NUMBER_BALLS; i++) {
+        if (keyPressed.scancode == sf::Keyboard::Scancode::Space) {
             balls.emplace_back(posX(gen), randRad(gen), randDensity(gen), randHardness(gen), get_Velocity_Mod());
-        }
-        for (Ball& ball : balls) {
-            ball.set_Ball_Pos(posX(gen));
         }
     };
 
