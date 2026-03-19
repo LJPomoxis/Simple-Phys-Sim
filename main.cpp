@@ -1,8 +1,11 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <nlohmann/json.hpp>
-#include <iostream>
-#include <fstream>
+#include <cmath> //sqrt
+#include <vector>
+#include <string>
+#include <iostream> //cout, cerr
+#include <fstream> // ifstream
 #include <cstdlib>
 #include <ctime>
 #include <random>
@@ -53,16 +56,39 @@ struct Vec2 {
         }
         return {0, 0};
     }
+    friend std::ostream& operator<<(std::ostream& os, const Vec2& v) {
+        return os << "(" << v.x << ", " << v.y << ")";
+    }
+};
+
+struct Size {
+    int x, y;
+
+    friend std::ostream& operator<<(std::ostream& os, const Size& s) {
+        return os << "(" << s.x << ", " << s.y << ")";
+    }
 };
 
 struct Body {
     std::vector<Vec2> vertices;
+    std::string type;
+    Size size;
     bool closed;
     int friction;
     int bounciness;
 
-    Body(std::vector<Vec2> v, bool c, int f, int b)
-        : vertices(std::move(v)), closed(c), friction(f), bounciness(b) {}
+    Body() = default;
+    Body(std::vector<Vec2> v, std::string t, Size s, bool c, int f, int b)
+        : vertices(std::move(v)), type(t), size(s) , closed(c), friction(f), bounciness(b) {}
+
+    friend std::ostream& operator<<(std::ostream& os, const Body& body) {
+        os << "Type: " << body.type << ", Size: " << body.size << ", Closed: " << body.closed << ", Friction: " << body.friction << ", Bounciness: " << body.bounciness << "\n  Vertices: [ ";
+        for (const auto& i : body.vertices) {
+            os << i << " "; 
+        }
+        os << "]";
+        return os;
+    }
 };
 
 class Ball {
@@ -132,6 +158,9 @@ public:
 
 void get_Window_Borders(std::vector<Body>& bodies);
 float get_Velocity_Mod();
+void from_json(const json& j, Vec2& v);
+void from_json(const json& j, Size& s);
+void from_json(const json& j, Body& b);
 
 int main() {
     sf::Font font;
@@ -144,14 +173,14 @@ int main() {
         std::cerr << "Failes to load edges file." << std::endl;
     }
 
-    json edgeData = json::parse(edges);
+    std::vector<Body> staticBodies;
 
-    for (auto it = edgeData["shapes"].begin(); it != edgeData["shapes"].end(); ++it) {
-        //std::cout << *it << std::endl;
-        for (auto [key, val] : it[0].items()) std::cout << key << ": " << val << std::endl;
+    json shapeData = json::parse(edges);
+    for (const auto& shape : shapeData["shapes"]) {
+        staticBodies.emplace_back(shape.get<Body>());
     }
 
-    std::vector<Body> staticBodies;
+    for (const auto& bodies : staticBodies) std::cout << bodies << "\n-----------\n";
 
     sf::Text text(font);
     text.setCharacterSize(24);
@@ -231,6 +260,25 @@ void get_Window_Borders(std::vector<Body>& bodies) {
 
 float get_Velocity_Mod() {
     return float(velocityMod(gen)) / 10.f;
+}
+
+void from_json(const json& j, Vec2& v) {
+    v.x = j.at(0).get<float>();
+    v.y = j.at(1).get<float>();
+}
+
+void from_json(const json& j, Size& s) {
+    s.x = j[0].get<float>();
+    s.y = j[1].get<float>();
+}
+
+void from_json(const json& j, Body& b) {
+    b.vertices = j.at("points").get<std::vector<Vec2>>();
+    b.type = j.at("type").get<std::string>();
+    b.size = j.at("size").get<Size>();
+    b.closed = j.at("closed").get<bool>();
+    b.friction = j.at("friction").get<int>();
+    b.bounciness = j.at("bounciness").get<int>();
 }
 
 float Ball::check_X_Edge(float currentSpeed) {
