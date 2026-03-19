@@ -1,5 +1,6 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
+#include <nlohmann/json.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -33,17 +34,35 @@ std::uniform_int_distribution<> randHardness(20, 100);
 std::uniform_int_distribution<> randDensity(5, 20);
 std::uniform_int_distribution<> velocityMod(10, 35);
 
-void get_Window_Borders(std::vector<StaticBody>& bodies);
+void get_Window_Borders(std::vector<Body>& bodies);
 float get_Velocity_Mod();
 
-struct StaticBody {
-    std::vector<int> vertices;
+struct Vec2 {
+    float x, y;
+
+    Vec2(float x = 0, float y = 0) : x(x), y(y) {}
+    Vec2 operator+(const Vec2& other) const { return {x + other.x, y + other.y}; }
+    Vec2 operator-(const Vec2& other) const { return {x - other.x, y - other.y}; }
+    Vec2 operator*(float scalar) const { return {x * scalar, y * scalar}; }
+
+    float length() const { return std::sqrt(x*x + y*y); }
+    Vec2 normalize() const {
+        float l = length();
+        if (l > 0) {
+            return {x/l, y/l};
+        }
+        return {0, 0};
+    }
+};
+
+struct Body {
+    std::vector<Vec2> vertices;
     bool closed;
     int friction;
-    int hardness;
+    int bounciness;
 
-    StaticBody(std::vector<int> list, bool close, int fric, int hard)
-        : vertices(std::move(list)), closed(close), friction(fric), hardness(hard) {}
+    Body(std::vector<Vec2> v, bool c, int f, int b)
+        : vertices(std::move(v)), closed(c), friction(f), bounciness(b) {}
 };
 
 class Ball {
@@ -74,9 +93,9 @@ private:
     float check_Y_Res(float speed);
     void set_Speed(float speedMod);
 
-    float get_X_Pos() { return xPos; }
-    float get_Y_Pos() { return yPos; }
-    float get_Rad() { return radius; }
+    float get_X_Pos() const { return xPos; }
+    float get_Y_Pos() const { return yPos; }
+    float get_Rad() const { return radius; }
 public:
     Ball(float xMod, float radIn, float densityIn, float hardnessIn, float speedMod) : shape(radIn - (radIn/4.f)) {
         radius = radIn;
@@ -117,7 +136,7 @@ int main() {
         std::cout << "Error loading font" << std::endl; 
     }
 
-    std::vector<StaticBody> staticBodies;
+    std::vector<Body> staticBodies;
 
     sf::Text text(font);
     text.setCharacterSize(24);
@@ -191,7 +210,8 @@ int main() {
     }
 }
 
-void get_Window_Borders(std::vector<StaticBody>& bodies) {
+void get_Window_Borders(std::vector<Body>& bodies) {
+    
     bodies.emplace_back();
 }
 
