@@ -7,6 +7,7 @@
                 [0, 0],
                 [0, 1080]
             ],
+            "size": [0, 0],
             "closed": false,
             "friction": 1,
             "bounciness": 1
@@ -18,6 +19,7 @@
                 [0, 0],
                 [1920, 0]
             ],
+            "size": [0, 0],
             "closed": false,
             "friction": 1,
             "bounciness": 1
@@ -29,6 +31,7 @@
                 [1920, 0],
                 [1920, 1080]
             ],
+            "size": [0, 0],
             "closed": false,
             "friction": 1,
             "bounciness": 1
@@ -40,6 +43,7 @@
                 [0, 1080],
                 [1920, 1080]
             ],
+            "size": [0, 0],
             "closed": false,
             "friction": 1,
             "bounciness": 1
@@ -52,6 +56,7 @@
                 [60, 120],
                 [40, 120]
             ],
+            "size": [0, 0],
             "closed": true,
             "friction": 1,
             "bounciness": 1
@@ -59,8 +64,11 @@
         {
             "id": "rectangle1",
             "type": "rect",
-            "position": [80, 80],
+            "points": [ 
+                [80, 80]
+            ],
             "size": [40, 40],
+            "closed": true,
             "friction": 1,
             "bounciness": 1
         }
