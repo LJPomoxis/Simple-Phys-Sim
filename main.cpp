@@ -131,8 +131,6 @@ private:
 
     void get_Collisions(std::vector<Body>& Bodies);
 
-    float check_X_Edge(float speed);
-    float check_Y_Edge(float speed);
     float check_X_Res(float speed);
     float check_Y_Res(float speed);
     void set_Speed(float speedMod);
@@ -360,32 +358,6 @@ void Ball::get_Collisions(std::vector<Body>& bodies) {
     if (xTmp != xPos) xSpeed *= -1;
 }
 
-float Ball::check_X_Edge(float currentSpeed) {
-    if(xPos > xREdge) {
-        xPos = xREdge;
-        currentSpeed -= (RESISTANCE*hardness);
-        return currentSpeed *= -1;
-    } else if(xPos < xLEdge) {
-        xPos = xLEdge;
-        currentSpeed += (RESISTANCE*hardness);
-        return currentSpeed *= -1;
-    }
-    return currentSpeed;
-}
-
-float Ball::check_Y_Edge(float currentSpeed) {
-    if(yPos > yREdge) {
-        yPos = yREdge;
-        currentSpeed -= (RESISTANCE*hardness);
-        return currentSpeed *= -1;
-    } else if(yPos < yLEdge) {
-        yPos = yLEdge;
-        currentSpeed += (RESISTANCE*hardness);
-        return currentSpeed *= -1;
-    }
-    return currentSpeed;
-}
-
 float Ball::check_X_Res(float currentSpeed) {
     if(currentSpeed < 0) {
         return currentSpeed += GRAVITY;
@@ -435,9 +407,6 @@ void Ball::update(std::vector<Body>& Bodies) {
     yPos += ySpeed;
 
     get_Collisions(Bodies);
-
-    //xSpeed = check_X_Edge(xSpeed);
-    //ySpeed = check_Y_Edge(ySpeed);
 
     ySpeed = check_Y_Res(ySpeed);
     xSpeed = check_X_Res(xSpeed);
