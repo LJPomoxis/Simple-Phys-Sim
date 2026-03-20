@@ -12,7 +12,8 @@
 
 using json = nlohmann::json;
 
-// look at vectors and normals so that we can do fucked up math
+// Normals are using clockwise winding
+// All shapes should be defined clockwise to be able to get correct normals
 
 // look at using vertices to batch draw calls
 // This requires using triangles to create slices to fill a circle
@@ -48,13 +49,12 @@ struct Vec2 {
     Vec2 operator-(const Vec2& other) const { return {x - other.x, y - other.y}; }
     Vec2 operator*(float scalar) const { return {x * scalar, y * scalar}; }
 
-    float length() const { return std::sqrt(x*x + y*y); }
     Vec2 normalize() const {
-        float l = length();
-        if (l > 0) {
-            return {x/l, y/l};
-        }
-        return {0, 0};
+        float l = std::sqrt(x*x + y*y);
+        return (l > 0) ? Vec2{x/l, y/l} : Vec2{0, 0};
+    }
+    Vec2 get_normal() const {
+        return Vec2{y, -x}.normalize();
     }
     friend std::ostream& operator<<(std::ostream& os, const Vec2& v) {
         return os << "(" << v.x << ", " << v.y << ")";
@@ -71,6 +71,7 @@ struct Size {
 
 struct Body {
     std::vector<Vec2> vertices;
+    std::vector<Vec2> vectors;
     std::string type;
     Size size;
     bool closed;
@@ -81,10 +82,16 @@ struct Body {
     Body(std::vector<Vec2> v, std::string t, Size s, bool c, int f, int b)
         : vertices(std::move(v)), type(t), size(s) , closed(c), friction(f), bounciness(b) {}
 
+    void calculate_vectors();
+
     friend std::ostream& operator<<(std::ostream& os, const Body& body) {
         os << "Type: " << body.type << ", Size: " << body.size << ", Closed: " << body.closed << ", Friction: " << body.friction << ", Bounciness: " << body.bounciness << "\n  Vertices: [ ";
         for (const auto& i : body.vertices) {
             os << i << " "; 
+        }
+        os << "] \n----------\n Vectors: [";
+        for (const auto& j : body.vectors) {
+            os << j << " ";
         }
         os << "]";
         return os;
@@ -279,6 +286,20 @@ void from_json(const json& j, Body& b) {
     b.closed = j.at("closed").get<bool>();
     b.friction = j.at("friction").get<int>();
     b.bounciness = j.at("bounciness").get<int>();
+
+    b.calculate_vectors();
+}
+
+void Body::calculate_vectors() {
+    if (vertices.size() < 2) return;
+
+    for (size_t i = 0; i < vertices.size(); ++i) {
+        if (i + 1 < vertices.size()) {
+            vectors.emplace_back(vertices[i+1] - vertices[i]);
+        } else if (closed && vertices.size() > 2) {
+            vectors.emplace_back(vertices[0] - vertices[i]);
+        }
+    }
 }
 
 float Ball::check_X_Edge(float currentSpeed) {
