@@ -1,11 +1,12 @@
 {
+    "_winding": "Clockwise winding, bounding box edges are defined counter-clockwise causing vectors to point inwards",
     "shapes": [
         {
             "id": "LeftWall",
             "type": "line",
             "points": [
-                [0, 0],
-                [0, 1080]
+                [0, 1080],
+                [0, 0]
             ],
             "closed": false,
             "friction": 1,
@@ -26,8 +27,8 @@
             "id": "RightWall",
             "type": "line",
             "points":[
-                [1920, 1080],
-                [1920, 0]
+                [1920, 0],
+                [1920, 1080]
             ],
             "closed": false,
             "friction": 1,
