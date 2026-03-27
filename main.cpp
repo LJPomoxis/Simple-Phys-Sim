@@ -75,6 +75,8 @@ struct Vertex {
     float x, y;
 
     Vertex(float x=0, float y=0) : x(x), y(y) {}
+    Vertex operator+(const Vertex& other) const { return {x + other.x, y + other.y}; }
+    Vertex operator-(const Vertex& other) const { return {x - other.x, y - other.y}; }
 
     friend std::ostream& operator<<(std::ostream& os, const Vertex& vert) {
         return os << "(" << vert.x << ", " << vert.y << ")";
@@ -101,7 +103,7 @@ struct BodyConfig {
     float mass;
     int friction;
     int bounciness;
-    bool isStatic = true;
+    bool isStatic;
     bool isClosed;
 };
 
@@ -118,6 +120,8 @@ private:
     int bounciness;
     bool isStatic = true;
     bool isClosed;
+
+    friend void from_json(const json& j, Body& b);
 
 public:
     Body() = default;
@@ -190,8 +194,7 @@ public:
 
 void get_Window_Borders(std::vector<Body>& bodies);
 float get_Velocity_Mod();
-void from_json(const json& j, Vec2& v);
-void from_json(const json& j, Size& s);
+void from_json(const json& j, Vertex& v);
 void from_json(const json& j, Body& b);
 
 int main() {
@@ -200,6 +203,7 @@ int main() {
         std::cerr << "Error loading font" << std::endl; 
     }
 
+    /*
     std::ifstream edges(staticObjectsFile);
     if (!edges) {
         std::cerr << "Failes to load edges file." << std::endl;
@@ -213,6 +217,7 @@ int main() {
     }
 
     for (const auto& bodies : staticBodies) std::cout << bodies << "\n-----------\n";
+    */
 
     sf::Text text(font);
     text.setCharacterSize(24);
@@ -222,19 +227,23 @@ int main() {
     window.setFramerateLimit(60);
     window.setVerticalSyncEnabled(true);
 
+    /*
     std::vector<Ball> balls;
     for (int i=0; i < NUMBER_BALLS; i++) {
         balls.emplace_back(posX(gen), randRad(gen), randDensity(gen), randHardness(gen), get_Velocity_Mod());
     }
+    */
 
     const auto on_Close = [&window](const sf::Event::Closed&) {
         window.close();
     };
 
-    const auto on_Key_Pressed = [&window, &balls](const sf::Event::KeyPressed& keyPressed) {
+    
+    const auto on_Key_Pressed = [&window /*, &balls*/](const sf::Event::KeyPressed& keyPressed) {
         if (keyPressed.scancode == sf::Keyboard::Scancode::Escape)
             window.close();
 
+        /* Left for reference, remove when replaced
         if (keyPressed.scancode == sf::Keyboard::Scancode::R) {
             while (!balls.empty()) {
                 balls.pop_back();
@@ -261,6 +270,7 @@ int main() {
                 balls.pop_back();
             }
         }
+        */
     };
 
     int ballCount;
@@ -270,12 +280,6 @@ int main() {
         // check all the window's events that were triggered since the last iteration of the loop
         window.handleEvents(on_Key_Pressed, on_Close);
         window.clear(sf::Color::Black);
-
-        for (Ball& ball : balls) {
-            ballCount++;
-            ball.update(staticBodies);
-            ball.draw(window);
-        }
 
         textBallCount = "Number of Objects: " + std::to_string(ballCount);
         text.setString(textBallCount);
@@ -294,24 +298,19 @@ float get_Velocity_Mod() {
     return float(velocityMod(gen)) / 10.f;
 }
 
-void from_json(const json& j, Vec2& v) {
+void from_json(const json& j, Vertex& v) {
     v.x = j.at(0).get<float>();
     v.y = j.at(1).get<float>();
 }
 
-void from_json(const json& j, Size& s) {
-    s.x = j[0].get<float>();
-    s.y = j[1].get<float>();
-}
-
 void from_json(const json& j, Body& b) {
-    b.vertices = j.at("points").get<std::vector<Vec2>>();
+    b.vertices = j.at("points").get<std::vector<Vertex>>();
     b.type = j.at("type").get<std::string>();
-    b.closed = j.at("closed").get<bool>();
+    b.isClosed = j.at("closed").get<bool>();
     b.friction = j.at("friction").get<int>();
     b.bounciness = j.at("bounciness").get<int>();
 
-    b.calculate_vectors();
+    b.calculateVectors();
 }
 
 Vec2 Vec2::normalize() const {
@@ -346,13 +345,13 @@ Vec2 Vec2::check_collision(Vec2& vertex, float objectX, float objectY, float rad
     return Vec2{objectX, objectY};
 }
 
-void Body::calculate_vectors() {
+void Body::calculateVectors() {
     if (vertices.size() < 2) return;
 
     for (size_t i = 0; i < vertices.size(); ++i) {
         if (i + 1 < vertices.size()) {
             vectors.emplace_back(vertices[i+1] - vertices[i]);
-        } else if (closed && vertices.size() > 2) {
+        } else if (isClosed && vertices.size() > 2) {
             vectors.emplace_back(vertices[0] - vertices[i]);
         }
     }
