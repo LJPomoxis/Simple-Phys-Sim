@@ -245,11 +245,37 @@ public:
 };
 
 class World {
+private:
+    std::vector<Body> bodies;
+    Vec2 gravity{0, -9.18f};
 
+public:
+    //add body
+
+    //step (step through simulation)
+        // apply forces
+        // resolve collisions
+        // integrate ()
+
+    const std::vector<Body>& getBodies() const { return bodies; }
 };
 
+// Separation also allows for changes in graphics libraries without touching 
+// simulation code
 class Renderer {
+private:
+    // 1 meter = 50 pixels
+    float scale = 50.0f;
 
+public:
+    //render
+        //clear screen
+        //get bodies
+        //display
+
+    Vec2 worldToRenderer (Vec2 worldPos) {
+        return { worldPos.x * scale, HEIGHT - (worldPos.y * scale) };
+    }
 };
 
 void get_Window_Borders(std::vector<Body>& bodies);
