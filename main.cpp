@@ -91,71 +91,6 @@ struct Size {
     }
 };
 
-class Ball {
-private:
-    const float SPEED = 5.f;
-    float initialX = 1.f;
-
-    float radius;
-    float outline;
-    float density;
-    float weight;
-
-    float xREdge;
-    float xLEdge;
-    float yREdge;
-    float yLEdge;
-
-    sf::CircleShape shape;
-    float xPos;
-    float yPos;
-    float xSpeed;
-    float ySpeed;
-    float hardness;
-
-    void get_Collisions(std::vector<Body>& Bodies);
-
-    float check_X_Res(float speed);
-    float check_Y_Res(float speed);
-    void set_Speed(float speedMod);
-
-    float get_X_Pos() const { return xPos; }
-    float get_Y_Pos() const { return yPos; }
-    float get_Rad() const { return radius; }
-public:
-    Ball(float xMod, float radIn, float densityIn, float hardnessIn, float speedMod) : shape(radIn - (radIn/4.f)) {
-        radius = radIn;
-        outline = radius/4.f;
-        density = densityIn;
-        weight = density*radius;
-        hardness = hardnessIn;
-
-        xREdge = WIDTH - radius;
-        yREdge = HEIGHT - radius;
-        xLEdge = radius;
-        yLEdge = radius;
-        if (xMod < radius) {
-            xMod = radius;
-        } else if (xMod > (WIDTH - radius)) {
-            xMod = WIDTH - radius;
-        }
-        xPos = xMod;
-        yPos = radius * 2.f;
-        shape.setOrigin({(radius - outline), (radius - outline)});
-        shape.setFillColor(sf::Color(150, 50, 250));
-
-        shape.setOutlineThickness(outline);
-        shape.setOutlineColor(sf::Color(250, 150, 100));
-        set_Speed(speedMod);
-    }
-
-    void set_Ball_Pos();
-    void set_Ball_Pos(float x);
-
-    void update(std::vector<Body>& Bodies);
-    void draw(sf::RenderWindow& window);
-};
-
 struct BodyConfig {
     std::vector<Vertex> vertices;
     std::vector<Vec2> vectors;
@@ -214,6 +149,8 @@ public:
         os << "]";
         return os;
     }
+
+    void calculateVectors();
 };
 
 class World {
@@ -421,66 +358,7 @@ void Body::calculate_vectors() {
     }
 }
 
-void Ball::get_Collisions(std::vector<Body>& bodies) {
-    Vec2 newPosTemp;
-    float yTmp = yPos;
-    float xTmp = xPos;
-    for (size_t i=0; i < bodies.size(); ++i) {
-        for (size_t j=0; j < bodies[i].vectors.size(); ++j) {
-            newPosTemp = bodies[i].vectors[j].check_collision(bodies[i].vertices[j], xPos, yPos, radius);
-            xPos = newPosTemp.x;
-            yPos = newPosTemp.y;
-        }
-    }
-    // Bad way to handle reflection, we need proper velocity vectors for real relfection calculation
-    if (yTmp != yPos) ySpeed *= -1;
-    if (xTmp != xPos) xSpeed *= -1;
-}
-
-float Ball::check_X_Res(float currentSpeed) {
-    if(currentSpeed < 0) {
-        return currentSpeed += GRAVITY;
-    }
-    
-    return currentSpeed -= GRAVITY;
-}
-
-float Ball::check_Y_Res(float speed) {
-    speed += (GRAVITY*weight);
-    if(speed < 0) {
-        return speed += (GRAVITY*RESISTANCE);
-    }
-
-    return speed;
-}
-
-void Ball::set_Speed(float speedMod) {
-    if (coin(gen)) initialX *= -1;
-
-    xSpeed = SPEED + speedMod;
-    xSpeed *= initialX;
-    ySpeed = SPEED;
-}
-
-void Ball::set_Ball_Pos() {
-    xPos = 0.f;
-    yPos = radius * 4.f;
-    set_Speed(get_Velocity_Mod());
-    shape.setPosition({xPos, yPos});
-}
-
-void Ball::set_Ball_Pos(float x) {
-    if (x > (WIDTH - radius)) {
-        x = WIDTH - radius;
-    } else if (x < radius) {
-        x = radius;
-    }
-    xPos = x;
-    yPos = radius * 2.f;
-    set_Speed(get_Velocity_Mod());
-    shape.setPosition({xPos, yPos});
-}
-
+/*
 void Ball::update(std::vector<Body>& Bodies) {
     xPos += xSpeed;
     yPos += ySpeed;
@@ -496,3 +374,4 @@ void Ball::update(std::vector<Body>& Bodies) {
 void Ball::draw(sf::RenderWindow& window) {
     window.draw(shape);
 }
+*/
