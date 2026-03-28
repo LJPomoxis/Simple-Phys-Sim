@@ -81,16 +81,6 @@ struct Vertex {
     }
 };
 
-// Remove size as it will no longer be used. We will just add rects 
-// to the objects file using vertices
-struct Size {
-    int x, y;
-
-    friend std::ostream& operator<<(std::ostream& os, const Size& s) {
-        return os << "(" << s.x << ", " << s.y << ")";
-    }
-};
-
 struct BodyConfig {
     std::vector<Vertex> vertices;
     std::vector<Vec2> vectors;
@@ -152,6 +142,7 @@ public:
         return os;
     }
 
+    // Update calculate vectors to account for new local coords based on midpoint/position
     void calculateVectors();
 };
 
@@ -165,7 +156,7 @@ public:
     void addBody(BodyConfig& body);
 
     //step (step through simulation)
-    void step() {
+    void step(float deltaTime) {
         // apply forces
         // resolve collisions
         // apply movement
@@ -224,8 +215,14 @@ int main() {
     text.setFillColor(sf::Color::White);
 
     sf::RenderWindow window(sf::VideoMode({WIDTH, HEIGHT}), "My window");
-    window.setFramerateLimit(60);
-    window.setVerticalSyncEnabled(true);
+    // This sleeps the loop to achieve fixed framerate so unless we do multithreading it doesn't work
+    //window.setFramerateLimit(60);
+
+    float fps = 60.f;
+
+    sf::Clock clock;
+    const sf::Time FRAME_RATE = sf::seconds(1.f / fps);
+    sf::Time timeSinceLastRender = sf::Time::Zero;
 
     /*
     std::vector<Ball> balls;
@@ -273,20 +270,24 @@ int main() {
         */
     };
 
-    int ballCount;
-    std::string textBallCount;
+    std::string hello = "Hello World!";
+    text.setString(hello);
     while (window.isOpen()) {
-        ballCount = 0;
-        // check all the window's events that were triggered since the last iteration of the loop
-        window.handleEvents(on_Key_Pressed, on_Close);
-        window.clear(sf::Color::Black);
+        sf::Time elapsed = sf::Time::Zero;
+        timeSinceLastRender += elapsed;
 
-        textBallCount = "Number of Objects: " + std::to_string(ballCount);
-        text.setString(textBallCount);
-        window.draw(text);
+        // 
+            // Do sim logic here
+        //
 
-        // end the current frame
-        window.display();
+        if (timeSinceLastRender >= FRAME_RATE) {
+            timeSinceLastRender -= FRAME_RATE;
+
+            window.handleEvents(on_Key_Pressed, on_Close);
+            window.clear(sf::Color::Black);
+            window.draw(text);
+            window.display();
+        }
     }
 }
 
