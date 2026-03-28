@@ -17,3 +17,5 @@ A very rudimentary implementation to simulate the collision of physics objects w
 [ ] Refactor code to smooth out bugs with clipping during collisions
 
 [ ] Add graphical display of edges/objects added using json file
+
+[ ] Add spatial grid system to prevent unecessary collision checks

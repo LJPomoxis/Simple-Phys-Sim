@@ -40,8 +40,6 @@ to scale based on fixed coordinates that are decoupled from the window coordinat
 
 const int WIDTH = 1920;
 const int HEIGHT = 1200;
-const float RESISTANCE = 0.0025f;
-const float GRAVITY = 0.005f;
 const int NUMBER_BALLS = 25 - 1;
 
 std::random_device rd;
@@ -164,12 +162,14 @@ private:
 
 public:
     //add body
-    void addBody(Body& body);
+    void addBody(BodyConfig& body);
 
     //step (step through simulation)
+    void step() {
         // apply forces
         // resolve collisions
-        // integrate ()
+        // apply movement
+    }
 
     const std::vector<Body>& getBodies() const { return bodies; }
 };
@@ -178,18 +178,18 @@ public:
 // simulation code
 class Renderer {
 private:
-    // 1 meter = 50 pixels
+    // scale is 1 unit to value of scale, in our case 1 unit = 50 pixels
     float scale = 50.0f;
 
 public:
-    //render
+    void render() {
         //clear screen
         //get bodies
         //display
-
-    Vec2 worldToRenderer (Vec2 worldPos) {
-        return { worldPos.x * scale, HEIGHT - (worldPos.y * scale) };
     }
+
+    // HEIGHT and WIDTH need to be replaced with non-const vars eventually, so this will need updated
+    Vec2 worldToRenderer (Vec2 worldPos) { return { worldPos.x * scale, HEIGHT - (worldPos.y * scale) }; }
 };
 
 void get_Window_Borders(std::vector<Body>& bodies);
@@ -355,6 +355,10 @@ void Body::calculateVectors() {
             vectors.emplace_back(vertices[0] - vertices[i]);
         }
     }
+}
+
+void World::addBody(BodyConfig& body) {
+    bodies.emplace_back(body);
 }
 
 /*
