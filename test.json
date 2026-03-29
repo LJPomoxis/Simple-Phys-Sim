@@ -3,46 +3,58 @@
         {
             "id": "LeftWall",
             "type": "line",
-            "points": [
-                [0, 1080],
-                [0, 0]
-            ],
-            "closed": false,
+            "center": [0, 250],
+            "static": true,
             "friction": 1,
-            "bounciness": 1
+            "bounciness": 1,
+            "shape_data": {
+                "points": [
+                    [0, 250],
+                    [0, -250]
+                ] 
+            }
         },
         {
             "id": "TopWall",
             "type": "line",
-            "points": [
-                [1920, 0],
-                [0, 0]
-            ],
-            "closed": false,
+            "center": [250, 0],
+            "static": true,
             "friction": 1,
-            "bounciness": 1
+            "bounciness": 1,
+            "shape_data": {
+                "points": [
+                    [-250, 0],
+                    [250, 0]
+                ] 
+            }
         },
         {
             "id": "RightWall",
             "type": "line",
-            "points":[
-                [1920, 0],
-                [1920, 1080]
-            ],
-            "closed": false,
+            "center": [500, 250],
+            "static": true,
             "friction": 1,
-            "bounciness": 1
+            "bounciness": 1,
+            "shape_data": {
+                "points":[
+                    [500, -250],
+                    [500, 250]
+                ]
+            }
         },
         {
             "id": "BottomWall",
             "type": "line",
-            "points": [
-                [1920, 1080],
-                [0, 1080]
-            ],
-            "closed": false,
+            "center": [250, 500],
+            "static": true,
             "friction": 1,
-            "bounciness": 1
+            "bounciness": 1,
+            "shape_data": {
+                "points": [
+                    [250, 0],
+                    [-250, 0]
+                ]
+            }
         }
     ]
 }
