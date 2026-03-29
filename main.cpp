@@ -224,50 +224,14 @@ int main() {
     const sf::Time FRAME_RATE = sf::seconds(1.f / fps);
     sf::Time timeSinceLastRender = sf::Time::Zero;
 
-    /*
-    std::vector<Ball> balls;
-    for (int i=0; i < NUMBER_BALLS; i++) {
-        balls.emplace_back(posX(gen), randRad(gen), randDensity(gen), randHardness(gen), get_Velocity_Mod());
-    }
-    */
-
     const auto on_Close = [&window](const sf::Event::Closed&) {
         window.close();
     };
 
     
-    const auto on_Key_Pressed = [&window /*, &balls*/](const sf::Event::KeyPressed& keyPressed) {
+    const auto on_Key_Pressed = [&window](const sf::Event::KeyPressed& keyPressed) {
         if (keyPressed.scancode == sf::Keyboard::Scancode::Escape)
             window.close();
-
-        /* Left for reference, remove when replaced
-        if (keyPressed.scancode == sf::Keyboard::Scancode::R) {
-            while (!balls.empty()) {
-                balls.pop_back();
-            }
-            for (int i=0; i < NUMBER_BALLS; i++) {
-                balls.emplace_back(posX(gen), randRad(gen), randDensity(gen), randHardness(gen), get_Velocity_Mod());
-            }
-            for (Ball& ball : balls) {
-                ball.set_Ball_Pos(posX(gen));
-            }
-        }
-        if (keyPressed.scancode == sf::Keyboard::Scancode::Space) {
-            balls.emplace_back(posX(gen), randRad(gen), randDensity(gen), randHardness(gen), get_Velocity_Mod());
-        }
-        if (keyPressed.scancode == sf::Keyboard::Scancode::Backspace) {
-            if (!balls.empty()) {
-                balls.pop_back();
-            } else {
-                std::cout << "No objects left to delete" << std::endl;
-            }
-        }
-        if (keyPressed.scancode == sf::Keyboard::Scancode::Delete) {
-            while (!balls.empty()) {
-                balls.pop_back();
-            }
-        }
-        */
     };
 
     std::string hello = "Hello World!";
@@ -280,10 +244,11 @@ int main() {
             // Do sim logic here
         //
 
+        window.handleEvents(on_Key_Pressed, on_Close);
+
         if (timeSinceLastRender >= FRAME_RATE) {
             timeSinceLastRender -= FRAME_RATE;
-
-            window.handleEvents(on_Key_Pressed, on_Close);
+            
             window.clear(sf::Color::Black);
             window.draw(text);
             window.display();
