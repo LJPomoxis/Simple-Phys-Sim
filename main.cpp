@@ -22,9 +22,6 @@ Normals are using clockwise winding
 
 using json = nlohmann::json;
 
-//std::string staticObjectsFile = "..\\static_objects.json";
-std::string staticObjectsFile = "..\\test.json";
-
 const int WIDTH = 1920;
 const int HEIGHT = 1200;
 const int NUMBER_BALLS = 25 - 1;
@@ -74,22 +71,18 @@ struct Vertex {
 struct Circle {
     float radius;
 };
-
 struct Polygon {
     std::vector<Vertex> vertices;
     std::vector<Vec2> vectors;
 };
-
 struct Capsule {
     float radius;
     // something else to determine rect body
 };
-
 struct LineSegment { // While this is called line 'segment', the current design only allows one segement
     std::vector<Vertex> vertices;
     std::vector<Vec2> vectors;
 };
-
 using ShapeType = std::variant<Circle, Polygon, Capsule, LineSegment>;
 
 struct BodyConfig {
@@ -145,8 +138,7 @@ private:
     Vec2 gravity{0, -9.18f};
 
 public:
-    //add body
-    void addBody(BodyConfig& body);
+    void addBody(BodyConfig body);
 
     //step (step through simulation)
     void step(float deltaTime) {
@@ -165,8 +157,6 @@ public:
     const std::vector<Body>& getBodies() const { return bodies; }
 };
 
-// Separation also allows for changes in graphics libraries without touching 
-// simulation code
 class Renderer {
 private:
     // scale is 1 unit to value of scale, in our case 1 unit = 50 pixels
@@ -183,32 +173,28 @@ public:
     Vec2 worldToRenderer (Vec2 worldPos) { return { worldPos.x * scale, HEIGHT - (worldPos.y * scale) }; }
 };
 
+void loadScene(World& world, std::string sceneFilePath);
 void calculateVectors(const std::vector<Vertex>& vertices, std::vector<Vec2>& vectors);
 float get_Velocity_Mod();
 void from_json(const json& j, Vertex& v);
-void from_json(const json& j, Body& b);
+void from_json(const json& j, Circle& c);
+void from_json(const json& j, Polygon& p);
+void from_json(const json& j, Capsule& c);
+void from_json(const json& j, LineSegment& l);
+void from_json(const json& j, BodyConfig& b);
 
 int main() {
+    std::string fontFilePath = "..\\Roboto_Condensed-BoldItalic.ttf";
+    //std::string sceneFilePath = "..\\static_objects.json";
+    std::string sceneFilePath = "..\\test.json";
+
     sf::Font font;
-    if (!font.openFromFile("..\\Roboto_Condensed-BoldItalic.ttf")) {
+    if (!font.openFromFile(fontFilePath)) {
         std::cerr << "Error loading font" << std::endl; 
     }
 
-    /*
-    std::ifstream edges(staticObjectsFile);
-    if (!edges) {
-        std::cerr << "Failes to load edges file." << std::endl;
-    }
-
-    std::vector<Body> staticBodies;
-
-    json shapeData = json::parse(edges);
-    for (const auto& shape : shapeData["shapes"]) {
-        staticBodies.emplace_back(shape.get<Body>());
-    }
-
-    for (const auto& bodies : staticBodies) std::cout << bodies << "\n-----------\n";
-    */
+    World world;
+    loadScene(world, sceneFilePath);
 
     sf::Text text(font);
     text.setCharacterSize(24);
@@ -268,6 +254,23 @@ int main() {
     }
 }
 
+void loadScene(World& world, std::string sceneFilePath) {
+    std::ifstream scene(sceneFilePath);
+    if (!scene) {
+        std::cerr << "Failes to load scene file." << std::endl;
+    }
+
+    std::vector<Body> staticBodies;
+
+    json shapes = json::parse(scene);
+    for (const auto& shape : shapes["shapes"]) {
+        world.addBody(shape.get<BodyConfig>());
+        staticBodies.emplace_back(shape.get<Body>());
+    }
+
+    //for (const auto& bodies : staticBodies) std::cout << bodies << "\n-----------\n";
+}
+
 void calculateVectors(const std::vector<Vertex>& vertices, std::vector<Vec2>& vectors) {
     if (vertices.size() < 2) return;
 
@@ -289,18 +292,24 @@ void from_json(const json& j, Vertex& v) {
     v.y = j.at(1).get<float>();
 }
 
-void from_json(const json& j, Circle& c) { c.radius = j.at("radius").get<float>(); }
+void from_json(const json& j, Circle& c) { 
+    c.radius = j.at("radius").get<float>();
+}
 
-void from_json(const json& j, Polygon& p) { p.vertices = j.at("points").get<std::vector<Vertex>>(); }
+void from_json(const json& j, Polygon& p) { 
+    p.vertices = j.at("points").get<std::vector<Vertex>>();
+}
 
 void from_json(const json& j, Capsule& c) {
     c.radius = j.at("radius").get<float>();
     // Finish when capsule is finished
 }
 
-void from_json(const json& j, LineSegment& l) { l.vertices = j.at("points").get<std::vector<Vertex>>(); }
+void from_json(const json& j, LineSegment& l) {
+    l.vertices = j.at("points").get<std::vector<Vertex>>();
+}
 
-void from_json(const json& j, Body& b) {
+void from_json(const json& j, BodyConfig& b) {
     b.friction = j.at("friction").get<int>();
     b.bounciness = j.at("bounciness").get<int>();
 
@@ -318,7 +327,7 @@ void from_json(const json& j, Body& b) {
 }
 
 // Current code doesn't account for the ends of an edge vector, it just calculates based on an infinite line
-// Thus we need to clamp edge vectors based on vertices
+// Needs to clamp edge vectors based on vertices
 float Vec2::dot_Product(Vec2& vertex, Vec2& object) {
     Vec2 normal = get_normal();
     Vec2 collisonVector = object - vertex;
@@ -344,38 +353,6 @@ Vec2 Vec2::check_collision(Vec2& vertex, float objectX, float objectY, float rad
     return Vec2{objectX, objectY};
 }
 
-/*
-void Body::calculateVectors() {
-    if (vertices.size() < 2) return;
-
-    for (size_t i = 0; i < vertices.size(); ++i) {
-        if (i + 1 < vertices.size()) {
-            vectors.emplace_back(vertices[i+1] - vertices[i]);
-        } else if (isClosed && vertices.size() > 2) {
-            vectors.emplace_back(vertices[0] - vertices[i]);
-        }
-    }
-}
-*/
-
-void World::addBody(BodyConfig& body) {
+void World::addBody(BodyConfig body) {
     bodies.emplace_back(body);
 }
-
-/*
-void Ball::update(std::vector<Body>& Bodies) {
-    xPos += xSpeed;
-    yPos += ySpeed;
-
-    get_Collisions(Bodies);
-
-    ySpeed = check_Y_Res(ySpeed);
-    xSpeed = check_X_Res(xSpeed);
-
-    shape.setPosition({xPos, yPos});
-}
-
-void Ball::draw(sf::RenderWindow& window) {
-    window.draw(shape);
-}
-*/
